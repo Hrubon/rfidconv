@@ -1,4 +1,4 @@
-.PHONY: clean
+.PHONY: clean tests
 
 CFLAGS+=-c -std=gnu11 -Wall -Wextra --pedantic -Werror -ggdb3
 LDFLAGS+=-Wall
@@ -18,3 +18,6 @@ clean:
 
 install: $(PROG)
 	sudo install $(PROG) /usr/bin
+
+tests: $(PROG)
+	cd ../tests; ./run-tests.pl < data.csv
