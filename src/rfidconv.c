@@ -1,24 +1,21 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
-#include <stdbool.h>
 
-#include "crc8.h"
 #include "common.h"
+
+#include "alpus.h"
 #include "provis.h"
 #include "safeq.h"
-#include "alpus.h"
 
 
 #define	KEYWORD_MAX_LEN	16
-#define	OUTPUT_MAX_LEN	32
 #define DEFAULT_CUST_ID 4
 
 
-extern int default_cust_id;
+int default_cust_id;
 
 
 struct format
@@ -35,14 +32,16 @@ not_implemented(const char *input, struct tag *tag)
 	(void) input;
 	(void) tag;
 
+	DEBUG_MSG("%s", "conversion not implemented");
+
 	return (-1);
 }
 
 static const struct format formats[] = {
-	{ "safeq", from_safeq, to_safeq },
-	{ "provis", from_provis, to_provis },
-	{ "alpus", from_alpus, to_alpus },
-	{ "alpusdec", not_implemented, to_alpus_dec }
+	{ "safeq",	from_safeq,		to_safeq },
+	{ "provis",	from_provis,		to_provis },
+	{ "alpus",	from_alpus,		to_alpus },
+	{ "alpus-dec",	not_implemented,	to_alpus_dec }
 };
 
 _Noreturn static void
@@ -56,7 +55,8 @@ die(char *format, ...) {
 	exit(EXIT_FAILURE);
 }
 
-static const struct format *select_format(char *keyword)
+static const struct format *
+select_format(char *keyword)
 {
 	for (unsigned i = 0; i < ARRAY_SIZE(formats); i++)
 	{
@@ -67,7 +67,8 @@ static const struct format *select_format(char *keyword)
 	return (NULL);
 }
 
-static void usage(const char *argv0)
+static void
+usage(const char *argv0)
 {
 	fprintf(stderr, "Usage: %s <src_format> <dst_format> <rfid> [cust_id]\n", argv0);
 	fprintf(stderr, "Supported formats:");
@@ -78,7 +79,8 @@ static void usage(const char *argv0)
 	fprintf(stderr, ".\n");
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
 	char *from, *to, *what;
 	const struct format *input_format, *output_format;

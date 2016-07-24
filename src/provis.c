@@ -4,8 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-extern int default_cust_id;
-#define	OUTPUT_MAX_LEN	32 // TODO
+int default_cust_id;
 
 
 int

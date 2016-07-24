@@ -16,6 +16,8 @@
 
 #define	ARRAY_SIZE(arr)	(sizeof (arr) / sizeof (*(arr)))
 
+#define	OUTPUT_MAX_LEN	32
+
 
 bool is_hexstr(const char *str);
 bool is_decstr(const char *str);
