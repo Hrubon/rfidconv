@@ -3,7 +3,7 @@
 CFLAGS+=-c -std=gnu11 -Wall -Wextra --pedantic -Werror -ggdb3
 LDFLAGS+=-Wall
 
-OBJS=rfidconv.o
+OBJS=rfidconv.o crc8.o common.o provis.o safeq.o alpus.o
 PROG=rfidconv
 
 
