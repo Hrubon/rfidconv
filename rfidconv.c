@@ -13,13 +13,18 @@
 #define	OUTPUT_MAX_LEN	32
 #define DEFAULT_CUST_ID 4
 
-#define	DEBUG	1
+
+#ifndef	DEBUG
+#define	DEBUG	0
+#endif
+
 #define	DEBUG_MSG(fmt, ...) do { \
 	if (DEBUG) fprintf(stderr, "*** DEBUG *** " fmt " at %s:%d\n", \
 		__VA_ARGS__, __FILE__, __LINE__); \
 } while (0);
 
-#define ARRAY_SIZE(arr)		(sizeof (arr) / sizeof (*(arr)))
+
+#define	ARRAY_SIZE(arr)	(sizeof (arr) / sizeof (*(arr)))
 
 
 
@@ -54,7 +59,7 @@ static const uint8_t mirror_table[] = {
 };
 
 /* Lookup table for computing CRC8 */
-static const uint8_t crc_table[] =
+static const uint8_t crc8_table[] =
 {
 	0, 94, 188, 226, 97, 63, 221, 131, 194, 156, 126,
 	32, 163, 253, 31, 65, 157, 195, 33, 127, 252, 162,
@@ -99,27 +104,24 @@ struct tag
 struct format
 {
 	char keyword[KEYWORD_MAX_LEN + 1];
-	int(*from)(const char *input, struct tag *tag);
-	int(*to)(const struct tag *tag, char *output[OUTPUT_MAX_LEN + 1]);
+	int (*from)(const char *input, struct tag *tag);
+	int (*to)(const struct tag *tag, char *output);
 };
 
 
-
-static void *die(char *format, ...) {
+_Noreturn static void *die(char *format, ...) {
 	va_list args;
+
 	va_start(args, format);
-
-	vprintf(format, args);
-
+	vfprintf(stderr, format, args);
 	va_end(args);
-	exit(1);
+
+	exit(EXIT_FAILURE);
 }
 
-
-
-static bool is_hexstr(char *str)
+static bool is_hexstr(const char *str)
 {
-	for (int i = 0; i < strlen(str); i++)
+	for (unsigned i = 0; str[i] != '\0'; i++)
 	{
 		if (!isxdigit(str[i]))
 			return false;
@@ -128,9 +130,9 @@ static bool is_hexstr(char *str)
 	return true;
 }
 
-static bool is_decstr(char *str)
+static bool is_decstr(const char *str)
 {
-	for (int i = 0; i < strlen(str); i++)
+	for (unsigned i = 0; str[i] != '\0'; i++)
 	{
 		if (!isdigit(str[i]))
 			return false;
@@ -139,7 +141,7 @@ static bool is_decstr(char *str)
 	return true;
 }
 
-static char* substring(char *str, int start, int len)
+static char *substring(const char *str, int start, int len)
 {
 	char *substr = (char*)malloc(len + 1);
 	memcpy(substr, &str[start], len);
@@ -149,7 +151,7 @@ static char* substring(char *str, int start, int len)
 }
 
 /* Extracts bytes to integer from hexstring */
-static int64_t extract_bytes(char *hexstr, int start, int len)
+static int64_t extract_bytes(const char *hexstr, int start, int len)
 {
 	// Get substring from input string
 	char *substr = substring(hexstr, start, len);
@@ -209,7 +211,7 @@ static uint8_t comp_crc(uint64_t code, uint8_t parity)
 	uint8_t crc = 0;
 	for (int i = sizeof(uint64_t) - 1; i >= 0; i--)
 	{
-		crc = crc_table[crc ^ input_bytes[i]];
+		crc = crc8_table[crc ^ input_bytes[i]];
 	}
 
 	return crc;
@@ -217,7 +219,7 @@ static uint8_t comp_crc(uint64_t code, uint8_t parity)
 
 
 
-static int from_safeq(char *input, struct tag *tag)
+static int from_safeq(const char *input, struct tag *tag)
 {
 	if (strlen(input) != 10)
 		return 1;
@@ -232,21 +234,21 @@ static int from_safeq(char *input, struct tag *tag)
 	return 0;
 }
 
-static int to_safeq(struct tag *tag, char *output[OUTPUT_MAX_LEN + 1])
+static int to_safeq(const struct tag *tag, char *output)
 {
 	char cust[2 + 1], data[8 + 1];
 
 	snprintf(cust, 2 + 1, "%02x", tag->cust_id);
 	snprintf(data, 8 + 1, "%08x", tag->data);
 
-	strncpy(&output, cust, 2 + 1);
-	strncat(&output, data, 8 + 1);
+	strncpy(output, cust, 2 + 1);
+	strncat(output, data, 8 + 1);
 
 	return 0;
 }
 
 
-static int from_provis(char *input, struct tag *tag)
+static int from_provis(const char *input, struct tag *tag)
 {
 	if (strlen(input) != 9)
 		return 1;
@@ -257,15 +259,15 @@ static int from_provis(char *input, struct tag *tag)
 	tag->has_cust_id = false; // sporadically, then hasn't
 	tag->cust_id = default_cust_id; // for formats that use it
 
-	char *code[8 + 1];
+	char code[8 + 1];
 	long val = strtol(input, NULL, 10);
-	snprintf(code, 8 + 1, "%x", val);
+	snprintf(code, 8 + 1, "%lx", val);
 	tag->data = extract_bytes(code, 0, 8);
 
 	return 0;
 }
 
-static int to_provis(struct tag *tag, char *output[OUTPUT_MAX_LEN + 1])
+static int to_provis(const struct tag *tag, char *output)
 {
 	snprintf(output, OUTPUT_MAX_LEN, "%i", tag->data);
 
@@ -273,12 +275,12 @@ static int to_provis(struct tag *tag, char *output[OUTPUT_MAX_LEN + 1])
 }
 
 
-static int from_alpus(char *input, struct tag *tag)
+static int from_alpus(const char *input, struct tag *tag)
 {
 	if (strlen(input) != 18)
 		return 1;
 
-	for (int i = 0; i < strlen(input); i++)
+	for (unsigned i = 0; i < strlen(input); i++)
 	{
 		switch (i)
 		{
@@ -333,7 +335,7 @@ static int from_alpus(char *input, struct tag *tag)
 	return 0;
 }
 
-static int to_alpus(struct tag *tag, char *output[OUTPUT_MAX_LEN + 1])
+static int to_alpus(const struct tag *tag, char *output)
 {
 	uint8_t cust_id = mirror_nibbles(tag->cust_id);
 	uint32_t data = mirror_nibbles(tag->data);
@@ -350,13 +352,16 @@ static int to_alpus(struct tag *tag, char *output[OUTPUT_MAX_LEN + 1])
 }
 
 
-static int from_alpus_dec(char *input, struct tag *tag)
+static int not_implemented(const char *input, struct tag *tag)
 {
-	// Nobody would parse RFID from such a crazy format...
-	return 100; // That means not implemented
+	(void) input;
+	(void) tag;
+
+	return (-1);
 }
 
-static int to_alpus_dec(struct tag *tag, char *output[OUTPUT_MAX_LEN + 1])
+
+static int to_alpus_dec(const struct tag *tag, char *output)
 {
 	uint8_t cust_id = mirror_nibbles(tag->cust_id);
 	uint32_t data = mirror_nibbles(tag->data);
@@ -387,80 +392,73 @@ static const struct format formats[] = {
 	{ "safeq", from_safeq, to_safeq },
 	{ "provis", from_provis, to_provis },
 	{ "alpus", from_alpus, to_alpus },
-	{ "alpusdec", from_alpus_dec, to_alpus_dec }
+	{ "alpusdec", not_implemented, to_alpus_dec }
 };
+
 
 static const struct format *get_format(char *keyword)
 {
-	for (int i = 0; i < ARRAY_SIZE(formats); i++)
+	for (unsigned i = 0; i < ARRAY_SIZE(formats); i++)
 	{
 		if (strcmp(formats[i].keyword, keyword) == 0)
 			return &formats[i];
 	}
 
-	die("Unknown format %s.\n", keyword);
+	return (NULL);
 }
 
 
 static void usage(const char *argv0)
 {
-	fprintf(stderr, "Usage: %s <src format> <dst format> <rfid> [default cust_id (byte in hex)]\n", argv0);
-	fprintf(stderr, "\n");
-	fprintf(stderr, "Supported formats are:\n");
-	for (int i = 0; i < ARRAY_SIZE(formats); i++)
-	{
-		fprintf(stderr, "- %s\n", formats[i].keyword);
+	fprintf(stderr, "Usage: %s <src_format> <dst_format> <rfid> [cust_id]\n", argv0);
+	fprintf(stderr, "Supported formats:");
+
+	for (unsigned i = 0; i < ARRAY_SIZE(formats); i++) {
+		fprintf(stderr, " %s", formats[i].keyword);
 	}
+	fprintf(stderr, ".\n");
 }
 
 
-static int main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	char *from, *to, *what;
 	const struct format *input_format, *output_format;
-	char output[OUTPUT_MAX_LEN + 1];
 	struct tag tag;
+	char output[OUTPUT_MAX_LEN + 1];
 
-	if (argc != 4 && argc != 5)
-	{
+	if (argc != 4 && argc != 5) {
 		usage(argv[0]);
-		return EXIT_FAILURE;
+		return (EXIT_FAILURE);
 	}
 
 	from = argv[1];
 	to = argv[2];
 	what = argv[3];
 
-	// optional default cust_id argument
-	if (argc == 5)
-	{
+	// optional cust_id argument
+	if (argc == 5) {
 		if (!is_hexstr(argv[4]))
-		{
-			usage(argv[0]);
-			return EXIT_FAILURE;
-		}
+			die("%s: cust_id is expected to be a hex byte\n", argv[0]);
 
 		default_cust_id = strtol(argv[4], NULL, 16);
 
 		if (default_cust_id < 0 || default_cust_id > 255)
-		{
-			usage(argv[0]);
-			return EXIT_FAILURE;
-		}
-	}
-	//
-
-	input_format = get_format(from);
-	output_format = get_format(to);
-
-	if (input_format->from(what, &tag) != 0) {
-		die("Error when parsing RFID of format %s.", input_format->keyword);
+			die("%s: cust_id must be non-negative and less than 255\n", argv[0]);
 	}
 
-	if (output_format->to(&tag, &output) != 0) {
-		die("Error when converting RFID to format %s.", output_format->keyword);
-	}
+	if ((input_format = get_format(from)) == NULL)
+		die("%s: unknown input format: %s.\n", argv[0], from);
 
-	printf("%s", output);
-	return EXIT_SUCCESS;
+	if ((output_format = get_format(to)) == NULL)
+		die("%s: unknown output format: %s.\n", argv[0], to);
+
+	if (input_format->from(what, &tag) != 0)
+		die("%s: error when parsing RFID of format %s.\n", argv[0], input_format->keyword);
+
+	if (output_format->to(&tag, output) != 0)
+		die("%s: error when converting RFID to format %s.\n", argv[0], output_format->keyword);
+
+	printf("%s\n", output);
+	return (EXIT_SUCCESS);
 }
