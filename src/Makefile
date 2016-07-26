@@ -1,3 +1,6 @@
+# GNU licence - copyleft	  #
+# author:		David Èepelík #
+
 .PHONY: clean tests
 
 CFLAGS+=-c -std=gnu11 -Wall -Wextra --pedantic -Werror -ggdb3

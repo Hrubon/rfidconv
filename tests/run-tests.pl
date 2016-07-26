@@ -1,3 +1,6 @@
+# GNU licence - copyleft	  #
+# author:		David Èepelík #
+
 #!/usr/bin/perl
 
 use strict;

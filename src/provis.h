@@ -1,3 +1,7 @@
+/* GNU licence - copyleft	  */
+/* author:		Ondøej Hrubý  */
+/* contributor:	David Èepelík */
+
 #ifndef	PROVIS_H
 #define	PROVIS_H
 

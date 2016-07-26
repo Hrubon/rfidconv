@@ -1,3 +1,7 @@
+/* GNU licence - copyleft	  */
+/* author:		Ondøej Hrubý  */
+/* contributor:	David Èepelík */
+
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>

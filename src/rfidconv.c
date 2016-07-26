@@ -1,3 +1,7 @@
+/* GNU licence - copyleft	  */
+/* author:		Ondøej Hrubý  */
+/* contributor:	David Èepelík */
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdarg.h>

@@ -1,3 +1,7 @@
+/* GNU licence - copyleft	  */
+/* author:		Ondøej Hrubý  */
+/* contributor:	David Èepelík */
+
 #ifndef CRC8_H
 #define CRC8_H
 
