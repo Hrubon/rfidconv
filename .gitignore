@@ -2,7 +2,6 @@
 *.swp
 *.swo
 *.o
-rfidconv
 
 # Ignore Visual studio project directory, sources are in src directory
 vs/
