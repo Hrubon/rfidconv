@@ -5,8 +5,7 @@
 #include "common.h"
 
 
-int
-from_safeq(const char *input, struct tag *tag)
+int from_safeq(const char *input, struct tag *tag)
 {
 	if (strlen(input) != 10)
 		return 1;
@@ -21,8 +20,7 @@ from_safeq(const char *input, struct tag *tag)
 	return 0;
 }
 
-int
-to_safeq(const struct tag *tag, char *output)
+int to_safeq(const struct tag *tag, char *output)
 {
 	char cust[2 + 1], data[8 + 1];
 

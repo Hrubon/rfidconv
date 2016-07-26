@@ -11,8 +11,7 @@
 int default_cust_id;
 
 
-int
-to_alpus_dec(const struct tag *tag, char *output)
+int to_alpus_dec(const struct tag *tag, char *output)
 {
 	uint8_t cust_id = mirror_nibbles(tag->cust_id);
 	uint32_t data = mirror_nibbles(tag->data);
@@ -39,8 +38,7 @@ to_alpus_dec(const struct tag *tag, char *output)
 }
 
 
-int
-from_alpus(const char *input, struct tag *tag)
+int from_alpus(const char *input, struct tag *tag)
 {
 	if (strlen(input) != 18)
 		return 1;
@@ -100,8 +98,7 @@ from_alpus(const char *input, struct tag *tag)
 	return 0;
 }
 
-int
-to_alpus(const struct tag *tag, char *output)
+int to_alpus(const struct tag *tag, char *output)
 {
 	uint8_t cust_id = mirror_nibbles(tag->cust_id);
 	uint32_t data = mirror_nibbles(tag->data);

@@ -26,8 +26,7 @@ struct format
 };
 
 
-static int
-not_implemented(const char *input, struct tag *tag)
+static int not_implemented(const char *input, struct tag *tag)
 {
 	(void) input;
 	(void) tag;
@@ -44,8 +43,9 @@ static const struct format formats[] = {
 	{ "alpus-dec",	not_implemented,	to_alpus_dec }
 };
 
-_Noreturn static void
-die(char *format, ...) {
+
+// _Noreturn removed - cannot compile under Windows...
+static void die(char *format, ...) {
 	va_list args;
 
 	va_start(args, format);
@@ -55,8 +55,7 @@ die(char *format, ...) {
 	exit(EXIT_FAILURE);
 }
 
-static const struct format *
-select_format(char *keyword)
+static const struct format *select_format(char *keyword)
 {
 	for (unsigned i = 0; i < ARRAY_SIZE(formats); i++)
 	{
@@ -67,20 +66,19 @@ select_format(char *keyword)
 	return (NULL);
 }
 
-static void
-usage(const char *argv0)
+static void usage(const char *argv0)
 {
 	fprintf(stderr, "Usage: %s <src_format> <dst_format> <rfid> [cust_id]\n", argv0);
 	fprintf(stderr, "Supported formats:");
 
-	for (unsigned i = 0; i < ARRAY_SIZE(formats); i++) {
+	for (unsigned i = 0; i < ARRAY_SIZE(formats); i++)
+	{
 		fprintf(stderr, " %s", formats[i].keyword);
 	}
 	fprintf(stderr, ".\n");
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	char *from, *to, *what;
 	const struct format *input_format, *output_format;
@@ -89,7 +87,8 @@ main(int argc, char *argv[])
 
 	default_cust_id = DEFAULT_CUST_ID;
 
-	if (argc != 4 && argc != 5) {
+	if (argc != 4 && argc != 5)
+	{
 		usage(argv[0]);
 		return (EXIT_FAILURE);
 	}
@@ -99,7 +98,8 @@ main(int argc, char *argv[])
 	what = argv[3];
 
 	// optional cust_id argument
-	if (argc == 5) {
+	if (argc == 5)
+	{
 		if (!is_hexstr(argv[4]))
 			die("%s: cust_id is expected to be a hex byte\n", argv[0]);
 
@@ -121,6 +121,6 @@ main(int argc, char *argv[])
 	if (output_format->to(&tag, output) != 0)
 		die("%s: error when converting RFID to format %s.\n", argv[0], output_format->keyword);
 
-	printf("%s\n", output);
-	return (EXIT_SUCCESS);
+	//printf("%s\n", output);
+	//return (EXIT_SUCCESS);
 }

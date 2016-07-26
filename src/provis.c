@@ -7,8 +7,7 @@
 int default_cust_id;
 
 
-int
-from_provis(const char *input, struct tag *tag)
+int from_provis(const char *input, struct tag *tag)
 {
 	if (strlen(input) != 9) {
 		DEBUG_MSG("%s", "from_provis: input string too long");
@@ -31,8 +30,7 @@ from_provis(const char *input, struct tag *tag)
 	return (0);
 }
 
-int
-to_provis(const struct tag *tag, char *output)
+int to_provis(const struct tag *tag, char *output)
 {
 	snprintf(output, OUTPUT_MAX_LEN, "%i", tag->data); // TODO
 	return (0);

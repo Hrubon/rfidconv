@@ -30,8 +30,7 @@ const uint8_t crc8_table[] =
 };
 
 
-uint8_t
-crc8(uint64_t code, uint8_t parity)
+uint8_t crc8(uint64_t code, uint8_t parity)
 {
 	// Prepare CRC input (bytes are in reversed order)
 	uint8_t *code_bytes = (uint8_t*)&code;
