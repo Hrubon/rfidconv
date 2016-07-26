@@ -125,6 +125,6 @@ int main(int argc, char *argv[])
 	if (output_format->to(&tag, output) != 0)
 		die("%s: error when converting RFID to format %s.\n", argv[0], output_format->keyword);
 
-	//printf("%s\n", output);
-	//return (EXIT_SUCCESS);
+	printf("%s\n", output);
+	return (EXIT_SUCCESS);
 }
